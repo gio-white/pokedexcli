@@ -1,9 +1,7 @@
 package main
 
-import (
-	"fmt"
-)
+import "github.com/gio-white/pokedexcli/repl"
 
 func main() {
-	fmt.Println("Hello, World!")
+	repl.StartRepl()
 }
