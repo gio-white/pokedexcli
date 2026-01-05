@@ -3,13 +3,16 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
-	"net/url"
+
+	"github.com/gio-white/pokedexcli/internal/pokeapi"
 )
 
-func StartRepl() {
+func StartRepl(cfg *Config) {
 	reader := bufio.NewScanner(os.Stdin)
+
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
@@ -23,17 +26,16 @@ func StartRepl() {
 
 		command, exists := GetCommands()[commandName]
 		if exists {
-			err := command.callback(&mapConfig)
+			err := command.callback(cfg)
 			if err != nil {
 				fmt.Println(err)
 			}
-			continue
 		} else {
 			fmt.Println("Unknown command")
-			continue
 		}
 	}
 }
+
 
 func cleanInput(text string) []string {
 	output := strings.ToLower(text)
@@ -44,7 +46,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(c *config) error
+	callback    func(c *Config) error
 }
 
 func GetCommands() map[string]cliCommand {
@@ -72,9 +74,8 @@ func GetCommands() map[string]cliCommand {
 	}
 }
 
-type config struct{
+type Config struct{
+	PokeapiClient *pokeapi.Client
 	Next url.URL
 	Previous url.URL
 }
-
-var mapConfig config

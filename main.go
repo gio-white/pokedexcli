@@ -1,7 +1,15 @@
 package main
 
-import "github.com/gio-white/pokedexcli/repl"
+import (
+	"github.com/gio-white/pokedexcli/internal/pokeapi"
+	"github.com/gio-white/pokedexcli/repl"
+	"time"
+)	
 
 func main() {
-	repl.StartRepl()
+	pokeClient := pokeapi.NewClient(5*time.Second, time.Minute*5)
+	cfg := &repl.Config{
+		PokeapiClient: &pokeClient,
+	}
+	repl.StartRepl(cfg)
 }

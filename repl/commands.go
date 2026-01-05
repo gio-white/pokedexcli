@@ -5,17 +5,17 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/gio-white/pokedexcli/pokeapi"
+	"github.com/gio-white/pokedexcli/internal/pokeapi"
 )
 
 
-func commandExit(c *config) error {
+func commandExit(c *Config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(c *config) error {
+func commandHelp(c *Config) error {
 	fmt.Println()
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
@@ -27,81 +27,65 @@ func commandHelp(c *config) error {
 	return nil
 }
 
-func commandMap(c *config) error {
-	var data map[string]any
+func commandMap(c *Config) error {
+	var data pokeapi.Location
 	var err error
 
 	if c.Previous.String() == "" {
-		data, err = pokeapi.GetLocationArea("https://pokeapi.co/api/v2/location-area/")
+		data, err = c.PokeapiClient.GetLocationArea("https://pokeapi.co/api/v2/location-area/")
 	} else {
-		data, err = pokeapi.GetLocationArea(c.Next.String())
+		data, err = c.PokeapiClient.GetLocationArea(c.Next.String())
 	}
 	if err != nil {
 		fmt.Println("Error with PokeAPI:", err)
 		return err
 	}
 	
-	results, ok := data["results"].([]interface{})
-	if !ok {
-		return fmt.Errorf("unexpected type for results")
+	for _, result := range data.Results {
+		fmt.Println(result.Name)
 	}
 
-	for _, r := range results {
-		resultMap, ok := r.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		fmt.Println(resultMap["name"])
-	}
-	nextStr, _ := data["next"].(string)
-	if nextStr != "" {
-		nextPage, err := url.Parse(nextStr)
-		c.Next = *nextPage
+	if data.Next != nil {
+		nextURL, err := url.Parse(*data.Next)
 		if err != nil {
 			return err
 		}
+		c.Next = *nextURL
 	} else {
 		c.Next = url.URL{}
 	}
+
 	return nil
 }
 
-func commandMapb(c *config) error {
-	var data map[string]any
+func commandMapb(c *Config) error {
+	var data pokeapi.Location
 	var err error
 
 	if c.Previous.String() == "" {
 		fmt.Println("you're on the first page")
 		return nil
-	} else {
-		data, err = pokeapi.GetLocationArea(c.Previous.String())
 	}
+
+	data, err = c.PokeapiClient.GetLocationArea(c.Previous.String())
 	if err != nil {
 		fmt.Println("Error with PokeAPI:", err)
 		return err
 	}
-	
-	results, ok := data["results"].([]interface{})
-	if !ok {
-		return fmt.Errorf("unexpected type for results")
+
+	for _, result := range data.Results {
+		fmt.Println(result.Name)
 	}
 
-	for _, r := range results {
-		resultMap, ok := r.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		fmt.Println(resultMap["name"])
-	}
-	previousStr, _ := data["previous"].(string)
-	if previousStr != "" {
-		previousPage, err := url.Parse(previousStr)
-		c.Previous = *previousPage
+	if data.Previous != nil {
+		prevURL, err := url.Parse(*data.Previous)
 		if err != nil {
 			return err
 		}
+		c.Previous = *prevURL
 	} else {
-		c.Next = url.URL{}
+		c.Previous = url.URL{}
 	}
+
 	return nil
 }
