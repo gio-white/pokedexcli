@@ -2,32 +2,10 @@ package repl
 
 import (
 	"fmt"
-	"net/url"
-	"os"
-
 	"github.com/gio-white/pokedexcli/internal/pokeapi"
+	"net/url"
 )
-
-
-func commandExit(c *Config) error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
-}
-
-func commandHelp(c *Config) error {
-	fmt.Println()
-	fmt.Println("Welcome to the Pokedex!")
-	fmt.Println("Usage:")
-	fmt.Println()
-	for _, cmd := range GetCommands() {
-		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
-	}
-	fmt.Println()
-	return nil
-}
-
-func commandMap(c *Config) error {
+func commandMap(c *Config, params []string) error {
 	var data pokeapi.Location
 	var err error
 
@@ -58,7 +36,7 @@ func commandMap(c *Config) error {
 	return nil
 }
 
-func commandMapb(c *Config) error {
+func commandMapb(c *Config, params []string) error {
 	var data pokeapi.Location
 	var err error
 
